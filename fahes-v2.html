@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الفاحص الإداري | النسخة التجريبية الثانية</title>
+<style>
+:root{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#17243a;background:#f4f7fb}*{box-sizing:border-box}body{margin:0}header{background:#123456;color:white;padding:22px 16px;text-align:center}header h1{margin:0;font-size:26px}header p{margin:8px 0 0;color:#dce8f5}main{max-width:760px;margin:24px auto;padding:0 14px}.card{background:#fff;border-radius:16px;padding:22px;box-shadow:0 6px 25px #12345612;margin-bottom:16px}h2{font-size:20px;margin:0 0 14px}label{display:block;font-weight:650;margin:14px 0 6px}select,textarea,input{width:100%;border:1px solid #c7d2df;border-radius:10px;padding:12px;font:inherit;background:#fff}textarea{min-height:120px;resize:vertical}button{font:inherit;border:0;border-radius:10px;padding:12px 20px;background:#12635c;color:#fff;cursor:pointer;margin-top:15px}button.secondary{background:#e9eff6;color:#18324c;margin-inline-start:8px}.muted{color:#5c6b7b;font-size:14px}.notice{background:#fff5da;border-right:4px solid #d3a228;padding:12px;border-radius:8px;margin:12px 0}.question{background:#f3f8fc;border-radius:12px;padding:15px;margin:14px 0}.tag{display:inline-block;background:#e1f0ec;color:#12554c;border-radius:20px;padding:4px 10px;font-size:13px}.hidden{display:none}ul{padding-right:23px;line-height:1.9}footer{text-align:center;color:#64748b;padding:15px 0 30px;font-size:13px}@media print{button,.no-print{display:none!important}body{background:#fff}.card{box-shadow:none;border:1px solid #ddd}}
+</style>
+</head>
+<body><header><h1>الفاحص الإداري</h1><p>لا توصية قبل التشخيص، ولا تشخيص دون أدلة</p></header>
+<main>
+<section class="card" id="start"><h2>بدء الفحص</h2><p class="muted">نسخة تجريبية توضح مسار الأسئلة المتفرعة. لا تستخدم بيانات شخصية أو سرية.</p>
+<label for="scope">نطاق الفحص</label><select id="scope"><option value="قسم">قسم</option><option value="إدارة">إدارة</option><option value="منظمة">منظمة</option></select>
+<label for="purpose">الغرض من الفحص</label><select id="purpose"><option value="مشكلة محددة">تشخيص مشكلة محددة</option><option value="فحص شامل">فحص شامل مبدئي</option><option value="تقييم الأداء">تقييم الأداء</option><option value="فرص التحسين">اكتشاف فرص التحسين</option></select>
+<label for="description">صف الحالة الإدارية بلغتك</label><textarea id="description" placeholder="مثال: تتأخر معاملات الإدارة رغم ثبات عددها وتوفر الموظفين..."></textarea><button id="begin">بدء الاستقصاء</button></section>
+<section class="card hidden" id="interview"><span class="tag" id="progress"></span><h2>التحقق من الفرضيات</h2><p class="muted">اختر الإجابة الأقرب للواقع. لا تُعد الإفادة وحدها دليلًا قاطعًا.</p><div id="questionArea"></div><button id="next">التالي</button><button class="secondary" id="restart">بدء فحص جديد</button></section>
+<section class="card hidden" id="report"><h2>التقرير الاستكشافي الأولي</h2><div class="notice">هذا التقرير لا يمثل تشخيصًا نهائيًا. النتائج فرضيات أولية تتطلب التحقق من الأدلة.</div><div id="reportBody"></div><button onclick="window.print()">طباعة / حفظ PDF</button><button class="secondary" id="again">فحص جديد</button></section>
+</main><footer>الفاحص الإداري — نموذج تجريبي يعمل محليًا دون اتصال بخدمة ذكاء اصطناعي</footer>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const pathways={
+ delay:{label:'تأخر الأعمال والإجراءات',words:['تأخر','تتاخر','تأخير','معاملات','موافقات','انتظار','تعطل','إجراء','اجراء'],questions:[
+ {q:'كيف تحددون أن العمل متأخر؟',choices:['مؤشر زمني موثق','انطباعات أو شكاوى','لا يوجد قياس واضح'],evidence:'سجل مدد الإنجاز وأساس المدة المستهدفة'},
+ {q:'أين يقع معظم التأخر؟',choices:['داخل الوحدة','عند إدارة أو جهة أخرى','في النظام التقني','لا نعرف بعد'],evidence:'خريطة سير العمل وتوقيت كل مرحلة'},
+ {q:'هل تغير حجم العمل أو وزن إجراءاته مؤخرًا؟',choices:['زاد عدد الأعمال','زادت خطوات الإجراءات أو تعقيدها','لم يتغير بحسب المتاح','لا تتوفر بيانات'],evidence:'أعداد المعاملات، الخطوات، وأزمنة العمل خلال فترات متماثلة'},
+ {q:'هل توجد متطلبات نظامية ملزمة تؤثر في المسار؟',choices:['نعم، موثقة','لا، وفق المتاح','غير معروف'],evidence:'الأنظمة واللوائح والتعليمات السارية'}]},
+ performance:{label:'الأداء والمستهدفات',words:['أداء','اداء','مستهدف','إنتاجية','انتاجية','إنجاز','انجاز','جودة','نتائج'],questions:[
+ {q:'كيف قيس مستوى الأداء؟',choices:['مؤشرات وبيانات موثقة','تقارير وصفية أو انطباعات','لا يوجد قياس واضح'],evidence:'تعريف المؤشرات ومصادر بياناتها'},
+ {q:'من وضع المستهدفات، وهل اختُبرت واقعيتها؟',choices:['وضعت بعد دراسة القدرة التشغيلية','وضعت دون دراسة واضحة','لا نعرف'],evidence:'وثائق اعتماد الأهداف ودراسة القدرة التشغيلية'},
+ {q:'ما الجانب الأكثر تأثرًا؟',choices:['جودة المخرجات','الالتزام الزمني','تحقيق الأثر','غير محدد'],evidence:'بيانات الجودة والزمن والنتائج الفعلية'},
+ {q:'هل توجد عوائق خارج سيطرة الوحدة؟',choices:['نعم','لا','غير معروف'],evidence:'مسارات الاعتماد والاعتماد المتبادل'}]},
+ people:{label:'المعنويات والتحفيز والقوى العاملة',words:['موظف','حماس','معنويات','تحفيز','رواتب','استقال','ضغط','عدالة','قيادة','ثقافة'],questions:[
+ {q:'كيف تم التحقق من وجود المشكلة البشرية أو المعنوية؟',choices:['استبانة أو بيانات موثقة','ملاحظات المدير فقط','لا يوجد قياس'],evidence:'بيانات مجمعة ومجهولة الهوية متى أمكن'},
+ {q:'ما العامل الذي يستحق الفحص أولًا؟',choices:['عدالة الأعباء والتعويضات','القيادة والثقة','المهارات والموارد','غير واضح'],evidence:'توزيع الأعباء وسياسات التعويض ومؤشرات المناخ'},
+ {q:'هل تغيرت المسؤوليات أو أوزان المهام والإجراءات؟',choices:['نعم','لا','لا نعرف'],evidence:'الأوصاف الوظيفية وسجلات الأعمال عبر الزمن'},
+ {q:'هل تسمح البيانات بتمييز نقص الدافعية عن العوائق التشغيلية؟',choices:['نعم','لا','غير مؤكد'],evidence:'مقابلات موثقة وبيانات تشغيلية غير شخصية'}]},
+ general:{label:'فحص إداري استكشافي',words:[],questions:[
+ {q:'هل أهداف الوحدة واختصاصاتها موثقة وواضحة؟',choices:['نعم','جزئيًا','لا / غير معروف'],evidence:'الأهداف والاختصاصات المعتمدة'},
+ {q:'ما أكثر مجال يحتاج إلى فحص؟',choices:['التنظيم والصلاحيات','الإجراءات والتقنية','الموارد والقوى العاملة','الثقافة والنتائج'],evidence:'وصف المشكلة والبيانات الداعمة'},
+ {q:'هل توجد بيانات موضوعية عن المشكلة؟',choices:['نعم','بعضها','لا'],evidence:'مستندات وسجلات ومؤشرات معتمدة'},
+ {q:'هل يمتد أثر المشكلة إلى وحدات أخرى؟',choices:['نعم','لا','غير معروف'],evidence:'خريطة العلاقات ومسارات العمل'}]}
+};
+let state={};
+function text(el,value){el.textContent=value}
+function detect(desc,purpose){if(purpose==='تقييم الأداء')return 'performance';let best='general',score=0;for(const [key,p] of Object.entries(pathways)){if(key==='general')continue;let n=p.words.filter(w=>desc.includes(w)).length;if(n>score){score=n;best=key}}return best}
+function show(id){for(const key of ['start','interview','report'])$(key).classList.toggle('hidden',key!==id)}
+function renderQuestion(){const p=pathways[state.path],item=p.questions[state.step];text($('progress'),`السؤال ${state.step+1} من ${p.questions.length} — ${p.label}`);const box=$('questionArea');box.replaceChildren();const wrap=document.createElement('div');wrap.className='question';const h=document.createElement('strong');text(h,item.q);wrap.append(h);const sel=document.createElement('select');sel.id='response';sel.style.marginTop='12px';const blank=document.createElement('option');blank.value='';text(blank,'اختر إجابة');sel.append(blank);for(const choice of item.choices){const opt=document.createElement('option');opt.value=choice;text(opt,choice);sel.append(opt)}wrap.append(sel);box.append(wrap);text($('next'),state.step===p.questions.length-1?'إصدار التقرير الأولي':'التالي')}
+function paragraph(parent,title,body){const h=document.createElement('h3');text(h,title);const p=document.createElement('p');text(p,body);parent.append(h,p)}
+function report(){show('report');const body=$('reportBody');body.replaceChildren();paragraph(body,'نطاق الفحص',`${state.scope} — ${state.purpose}`);paragraph(body,'وصف الحالة',state.description);paragraph(body,'المسار المختار',pathways[state.path].label);const h=document.createElement('h3');text(h,'الإفادات والأدلة المطلوبة');body.append(h);const ul=document.createElement('ul');pathways[state.path].questions.forEach((q,i)=>{const li=document.createElement('li');text(li,`${q.q} — الإفادة: ${state.answers[i]}. للتحقق: ${q.evidence}.`);ul.append(li)});body.append(ul);paragraph(body,'التقييم الأولي','المعلومات المدخلة إفادات تحتاج إلى تدقيق؛ لا يمكن تأكيد السبب الجذري أو تقييم الأداء رقميًا من هذه الإجابات وحدها.');paragraph(body,'الخطوة المقترحة','اجمع الأدلة المذكورة، وحدد مصدرها وتاريخها وصلاحية الاطلاع عليها، ثم اختبر الفرضيات المتنافسة قبل اعتماد أي توصية.');paragraph(body,'حدود النسخة','يعتمد اختيار المسار على كلمات مفتاحية، والأسئلة مبرمجة مسبقًا. لا يوجد اتصال بذكاء اصطناعي أو تحقق تلقائي من الأنظمة أو المستندات.')} 
+$('begin').onclick=()=>{const description=$('description').value.trim();if(description.length<12){alert('يرجى كتابة وصف أوضح للحالة (12 حرفًا على الأقل).');return}state={scope:$('scope').value,purpose:$('purpose').value,description,path:detect(description,$('purpose').value),step:0,answers:[]};show('interview');renderQuestion()};
+$('next').onclick=()=>{const v=$('response').value;if(!v){alert('اختر إجابة للمتابعة.');return}state.answers.push(v);state.step++;if(state.step>=pathways[state.path].questions.length)report();else renderQuestion()};
+function restart(){show('start');$('description').value=''}$('restart').onclick=restart;$('again').onclick=restart;
+</script></body></html>
